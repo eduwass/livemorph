@@ -44,3 +44,6 @@ Thumbs.db
 
 # ignore build binaries
 livemorph
+
+# cursor files
+.cursor/
