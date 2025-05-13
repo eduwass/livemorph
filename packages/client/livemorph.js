@@ -184,4 +184,10 @@
     Client: LiveMorphClient,
     create: (options) => new LiveMorphClient(options)
   };
-})(); 
+})();
+
+// Create LiveMorph client with debug enabled
+new LiveMorph.Client({
+  server: 'http://localhost:4321',
+  debug: true
+});

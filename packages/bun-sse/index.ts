@@ -78,6 +78,8 @@ export function createSSEHandler(handler: SSEHandler): (req: Request) => Respons
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
         "Connection": "keep-alive",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
       },
     });
   };
