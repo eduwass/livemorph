@@ -6,7 +6,7 @@
   "watch": {
     "paths": [
       "**/*.php",
-      "*.html",
+      "**/*.html",
       "**/*.css",
       "**/*.js"
     ],
@@ -17,7 +17,7 @@
   },
   "actions": {
     "**/*.php": "morph-html",
-    "*.html": "morph-html",
+    "**/*.html": "morph-html",
     "**/*.css": "reload-css",
     "**/*.js": "reload-page"
   },
