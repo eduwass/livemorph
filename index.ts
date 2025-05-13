@@ -1,34 +1,122 @@
 import { createSSEHandler } from "bun-sse";
+import { loadConfig } from "config";
+import { createFileWatcher } from "file-watcher";
+import { serveStatic } from "static-server";
 
-// Create an SSE handler that emits a timer event every second
-const sseHandler = createSSEHandler(async (stream, req) => {
-  console.log("Client connected to SSE stream");
-  let count = 0;
-  // Keep emitting timer events until the connection is closed
-  while (!req.signal.aborted) {
-    // Emit a timer event with the current count and timestamp
-    stream.event("timer", {
-      count: count++,
-      timestamp: Date.now(),
+// Initialize the application
+async function init() {
+  // Load configuration
+  const config = await loadConfig();
+  
+  // Keep track of all connected SSE streams
+  const connectedStreams: Set<any> = new Set();
+  
+  // Create an SSE handler for file change events
+  const sseHandler = createSSEHandler(async (stream, req) => {
+    console.log("Client connected to SSE stream");
+    
+    // Add this stream to our connected streams
+    connectedStreams.add(stream);
+    
+    // Remove stream when connection closes
+    req.signal.addEventListener('abort', () => {
+      console.log("Removing stream from connected streams");
+      connectedStreams.delete(stream);
     });
-    // Wait for 1 second before the next event
-    await Bun.sleep(1000);
-  }
-  console.log("Client disconnected from SSE stream");
-});
-
-// Create a simple server
-Bun.serve({
-  port: 4321,
-  fetch(req) {
-    const url = new URL(req.url);
-    // Handle SSE stream endpoint
-    if (url.pathname === "/events") {
-      return sseHandler(req);
+    
+    // Send an initial connection event with config
+    stream.event("connected", {
+      timestamp: Date.now(),
+      message: "Connected to LiveMorph SSE server",
+      config: {
+        fragments: config.fragments
+      }
+    });
+    
+    // The client remains connected until the request is aborted
+    while (!req.signal.aborted) {
+      await Bun.sleep(1000);
     }
-    // Handle other routes
-    return new Response("Not found", { status: 404 });
-  },
-});
+    
+    console.log("Client disconnected from SSE stream");
+    connectedStreams.delete(stream);
+  });
 
-console.log("LiveMorph SSE server running at http://localhost:4321");
+  // Function to broadcast events to all connected clients
+  function broadcastEvent(eventName: string, data: any) {
+    console.log(`Broadcasting ${eventName} event to ${connectedStreams.size} clients`);
+    
+    for (const stream of connectedStreams) {
+      try {
+        stream.event(eventName, data);
+      } catch (error) {
+        console.error("Error sending event to client:", error);
+      }
+    }
+  }
+
+  // Create server
+  const server = Bun.serve({
+    port: config.server.port,
+    idleTimeout: 0, // Prevent connections from timing out
+    fetch: async (req) => {
+      const url = new URL(req.url);
+      
+      // Handle SSE stream endpoint
+      if (url.pathname === "/events") {
+        // Enable CORS for SSE endpoint
+        if (req.method === "OPTIONS") {
+          return new Response(null, {
+            status: 204,
+            headers: {
+              "Access-Control-Allow-Origin": "*",
+              "Access-Control-Allow-Methods": "GET, OPTIONS",
+              "Access-Control-Allow-Headers": "Content-Type"
+            }
+          });
+        }
+        
+        return sseHandler(req);
+      }
+      
+      // Try to serve static files
+      const staticResponse = await serveStatic(req);
+      if (staticResponse) {
+        return staticResponse;
+      }
+      
+      // Handle all other routes with 404
+      return new Response("Not found", { status: 404 });
+    },
+  });
+
+  console.log(`LiveMorph server running at http://localhost:${config.server.port}`);
+  console.log(`Open http://localhost:${config.server.port} in your browser to see the test page`);
+
+  // Initialize the file watcher
+  const watcher = createFileWatcher(
+    {
+      paths: config.watch.paths,
+      ignore: config.watch.ignore,
+      actions: config.actions
+    },
+    (event) => {
+      // Broadcast the file change event to all connected clients
+      broadcastEvent("filechange", event);
+    }
+  );
+
+  // Handle graceful shutdown
+  process.on("SIGINT", () => {
+    console.log("Shutting down LiveMorph server...");
+    watcher.close();
+    server.stop();
+    process.exit(0);
+  });
+}
+
+// Start the application
+init().catch(error => {
+  console.error("Error starting LiveMorph:", error);
+  process.exit(1);
+});

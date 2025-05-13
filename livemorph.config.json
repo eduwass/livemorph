@@ -1,0 +1,30 @@
+{
+  "server": {
+    "port": 4321,
+    "https": false
+  },
+  "watch": {
+    "paths": [
+      "**/*.php",
+      "*.html",
+      "**/*.css",
+      "**/*.js"
+    ],
+    "ignore": [
+      "node_modules/**",
+      ".git/**"
+    ]
+  },
+  "actions": {
+    "**/*.php": "morph-html",
+    "*.html": "morph-html",
+    "**/*.css": "reload-css",
+    "**/*.js": "reload-page"
+  },
+  "fragments": {
+    "main": "#main",
+    "content": "#content",
+    "header": "header",
+    "footer": "footer"
+  }
+} 

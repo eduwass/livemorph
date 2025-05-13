@@ -3,10 +3,15 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "build": "bun build --compile --minify --sourcemap --bytecode ./index.ts --outfile livemorph"
+    "build": "bun build --compile --minify --sourcemap --bytecode ./index.ts --outfile livemorph",
+    "dev": "bun run --watch index.ts"
   },
   "dependencies": {
-    "bun-sse": "file:packages/bun-sse"
+    "bun-sse": "file:packages/bun-sse",
+    "file-watcher": "file:packages/file-watcher",
+    "config": "file:packages/config",
+    "static-server": "file:packages/static-server",
+    "livemorph-client": "file:packages/client"
   },
   "devDependencies": {
     "@types/bun": "latest"
