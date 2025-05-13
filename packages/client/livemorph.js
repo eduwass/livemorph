@@ -120,7 +120,8 @@
     reloadCSS() {
       // Find all stylesheet links
       const links = document.querySelectorAll('link[rel="stylesheet"]');
-      
+      // Add small delay to ensure new styles are applied
+      Bun.sleep(200);
       links.forEach(link => {
         // Append or update timestamp parameter to force refresh
         const href = link.href;
