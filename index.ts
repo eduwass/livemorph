@@ -2,6 +2,8 @@ import { createSSEHandler } from "bun-sse";
 import { loadConfig } from "config";
 import { createFileWatcher } from "file-watcher";
 import { serveStatic } from "static-server";
+import indexHtml from "./test.html" with { type: "file" };
+import { file } from "bun";
 
 // Initialize the application
 async function init() {
@@ -77,6 +79,13 @@ async function init() {
         }
         
         return sseHandler(req);
+      }
+      
+      // Serve embedded index.html at root path
+      if (url.pathname === "/") {
+        return new Response(file(indexHtml), {
+          headers: { "Content-Type": "text/html" }
+        });
       }
       
       // Try to serve static files

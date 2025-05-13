@@ -3,7 +3,7 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "build": "bun build --compile --minify --sourcemap --bytecode ./index.ts --outfile livemorph",
+    "build": "bun build --compile --minify --sourcemap --bytecode ./index.ts ./test.html ./packages/client/livemorph.js --outfile livemorph",
     "dev": "bun run --watch index.ts"
   },
   "dependencies": {
