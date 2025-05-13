@@ -2,6 +2,9 @@
   "name": "livemorph",
   "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "build": "bun build --compile --minify --sourcemap --bytecode ./index.ts --outfile livemorph"
+  },
   "dependencies": {
     "bun-sse": "file:packages/bun-sse"
   },
