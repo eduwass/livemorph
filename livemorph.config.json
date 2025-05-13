@@ -1,8 +1,7 @@
 {
-  "server": {
-    "port": 4321,
-    "https": false
-  },
+  "host": "localhost",
+  "port": 4321,
+  "https": false,
   "watch": {
     "paths": [
       "**/*.php",

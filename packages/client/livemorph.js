@@ -5,7 +5,9 @@
 (function() {
   // Default configuration
   const defaultConfig = {
-    server: 'http://localhost:4321',
+    host: 'localhost', // Can be overridden by config or server
+    port: 4321,
+    https: false,
     events: '/events',
     reconnectDelay: 2000,
     debug: false
@@ -32,12 +34,18 @@
     }
     
     connect() {
-      this.log('Connecting to SSE server:', `${this.config.server}${this.config.events}`);
+      // Use host and port from config or serverConfig
+      const host = (this.serverConfig && this.serverConfig.host) || this.config.host;
+      const port = (this.serverConfig && this.serverConfig.port) || this.config.port;
+      const https = (this.serverConfig && typeof this.serverConfig.https === 'boolean') ? this.serverConfig.https : this.config.https;
+      const protocol = https ? 'https://' : 'http://';
+      const sseUrl = `${protocol}${host}:${port}${this.config.events}`;
+      this.log('Connecting to SSE server:', sseUrl);
       this.connectAttempts++;
       
       try {
         // Create EventSource
-        this.eventSource = new EventSource(`${this.config.server}${this.config.events}`);
+        this.eventSource = new EventSource(sseUrl);
         
         // Connection opened
         this.eventSource.onopen = () => {
@@ -66,6 +74,10 @@
           const data = JSON.parse(e.data);
           this.log('Connected to server:', data.message);
           this.serverConfig = data.config || {};
+          // If the server sends host/port/https, update config for future reconnects
+          if (this.serverConfig.host) this.config.host = this.serverConfig.host;
+          if (this.serverConfig.port) this.config.port = this.serverConfig.port;
+          if (typeof this.serverConfig.https === 'boolean') this.config.https = this.serverConfig.https;
         });
         
         // File change event

@@ -1,12 +1,9 @@
 import { resolve } from "path";
 
 export interface LiveMorphConfig {
-  server: {
-    port: number;
-    https: boolean;
-    cert?: string;
-    key?: string;
-  };
+  host: string; // Hostname or IP
+  port: number; // Port number
+  https: boolean; // Use HTTPS
   watch: {
     paths: string[];
     ignore: string[];
@@ -17,10 +14,9 @@ export interface LiveMorphConfig {
 
 // Default configuration
 const defaultConfig: LiveMorphConfig = {
-  server: {
-    port: 4321,
-    https: false
-  },
+  host: "localhost",
+  port: 4321,
+  https: false,
   watch: {
     paths: ["**/*.php", "**/*.html", "**/*.css", "**/*.js"],
     ignore: ["node_modules/**", ".git/**"]
@@ -50,10 +46,6 @@ export async function loadConfig(): Promise<LiveMorphConfig> {
     return {
       ...defaultConfig,
       ...fileConfig,
-      server: {
-        ...defaultConfig.server,
-        ...(fileConfig.server || {})
-      },
       watch: {
         ...defaultConfig.watch,
         ...(fileConfig.watch || {}),
