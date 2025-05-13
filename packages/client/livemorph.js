@@ -94,40 +94,40 @@
     
     handleFileChange(data) {
       const { file, action } = data;
-      
-      // Different handling based on the action
-      switch(action) {
-        case 'reload-page':
-          this.log('Reloading page...');
-          window.location.reload();
-          break;
-          
-        case 'reload-css':
-          this.log('Hot-reloading CSS...');
-          this.reloadCSS();
-          break;
-          
-        case 'morph-html':
-          this.log('Morphing HTML...');
-          this.fetchAndMorphHTML();
-          break;
-          
-        default:
-          this.log(`Unknown action: ${action}`);
-      }
+      // Wait 250ms before handling the file change
+      setTimeout(() => {
+        // Different handling based on the action
+        switch(action) {
+          case 'reload-page':
+            this.log('Reloading page...');
+            window.location.reload();
+            break;
+            
+          case 'reload-css':
+            this.log('Hot-reloading CSS...');
+            this.reloadCSS();
+            break;
+            
+          case 'morph-html':
+            this.log('Morphing HTML...');
+            this.fetchAndMorphHTML();
+            break;
+            
+          default:
+            this.log(`Unknown action: ${action}`);
+        }
+      }, 250);
     }
     
     reloadCSS() {
       // Find all stylesheet links
       const links = document.querySelectorAll('link[rel="stylesheet"]');
       // Add small delay to ensure new styles are applied
-      setTimeout(() => {
-        links.forEach(link => {
-          // Append or update timestamp parameter to force refresh
-          const href = link.href;
-          link.href = href.split('?')[0] + '?' + Date.now();
-        });
-      }, 200);
+      links.forEach(link => {
+        // Append or update timestamp parameter to force refresh
+        const href = link.href;
+        link.href = href.split('?')[0] + '?' + Date.now();
+      });
     }
     
     async fetchAndMorphHTML() {
