@@ -186,8 +186,5 @@
   };
 })();
 
-// Create LiveMorph client with debug enabled
-new LiveMorph.Client({
-  server: 'http://localhost:4321',
-  debug: true
-});
+// Create LiveMorph client with settings from config
+new LiveMorph.Client();
